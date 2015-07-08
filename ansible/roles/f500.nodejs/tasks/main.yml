@@ -1,0 +1,25 @@
+---
+# Install nodejs (Debian)
+- include: Debian.yml
+  when: ansible_distribution in ['Debian']
+
+# Install nodejs (Ubuntu)
+- include: Ubuntu.yml
+  when: ansible_distribution in ['Ubuntu']
+
+
+- name: install npm
+  shell: curl https://www.npmjs.org/install.sh | bash creates=/usr/bin/npm
+
+- name: get temp directory
+  command: npm -g config get tmp
+  register: npm_tmp_dir
+  changed_when: False
+
+- name: set temp directory
+  command: npm -g config set tmp /tmp
+  when: npm_tmp_dir.stdout != '/tmp'
+
+- name: remove old temp directory
+  file: "path={{ npm_tmp_dir.stdout }} state=absent"
+  when: npm_tmp_dir.stdout != '/tmp'
